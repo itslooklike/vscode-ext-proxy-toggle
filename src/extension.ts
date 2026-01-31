@@ -1,26 +1,150 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import * as vscode from 'vscode'
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+const EXT_ID = 'proxxy'
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "vscode-ext-proxy-toggle" is now active!');
+const COMMANDS = {
+  CLICK: `${EXT_ID}.click`,
+  TOGGLE: `${EXT_ID}.toggle`,
+  SET_ADDRESS: `${EXT_ID}.setAddress`,
+} as const
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('vscode-ext-proxy-toggle.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from vscode-ext-proxy-toggle!');
-	});
+const CONFIG_KEYS = {
+  CUSTOM_URL: 'customUrl',
+  HTTP_PROXY: 'http.proxy',
+  HTTP_PROXY_SUPPORT: 'http.proxySupport',
+  HTTP_SYSTEM_CERTIFICATES: 'http.systemCertificates',
+} as const
 
-	context.subscriptions.push(disposable);
+let statusBarItem: vscode.StatusBarItem
+
+function isProxyEnabled(): boolean {
+  const config = vscode.workspace.getConfiguration()
+  const currentProxy = config.get<string>(CONFIG_KEYS.HTTP_PROXY)
+  return !!(currentProxy && currentProxy.length > 0)
 }
 
-// This method is called when your extension is deactivated
-export function deactivate() {}
+export function activate(context: vscode.ExtensionContext) {
+  statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100)
+  statusBarItem.command = COMMANDS.CLICK
+  statusBarItem.show()
+
+  updateStatusBarItem()
+
+  const clickCommand = vscode.commands.registerCommand(COMMANDS.CLICK, async () => {
+    await handleClick()
+  })
+
+  const toggleCommand = vscode.commands.registerCommand(COMMANDS.TOGGLE, async () => {
+    await toggleProxy()
+  })
+
+  const setAddressCommand = vscode.commands.registerCommand(COMMANDS.SET_ADDRESS, async () => {
+    await setCustomAddress()
+  })
+
+  context.subscriptions.push(clickCommand, toggleCommand, setAddressCommand, statusBarItem)
+}
+
+async function handleClick() {
+  const proxyConfig = vscode.workspace.getConfiguration(EXT_ID)
+  const customUrl = proxyConfig.get<string>(CONFIG_KEYS.CUSTOM_URL, '')
+
+  if (customUrl) {
+    await toggleProxy()
+  } else {
+    await setCustomAddress()
+  }
+}
+
+async function setCustomAddress() {
+  const proxyConfig = vscode.workspace.getConfiguration(EXT_ID)
+  const customUrl = proxyConfig.get<string>(CONFIG_KEYS.CUSTOM_URL, '')
+
+  const input = await vscode.window.showInputBox({
+    prompt: 'Введите адрес прокси',
+    placeHolder: 'Например: socks5://127.0.0.1:1080',
+    value: customUrl,
+    validateInput: (value) => {
+      if (!value) {
+        return 'Адрес не может быть пустым'
+      }
+      if (!value.includes('://')) {
+        return 'Адрес должен включать протокол (например: socks5://)'
+      }
+      return null
+    },
+  })
+
+  if (input) {
+    await proxyConfig.update(CONFIG_KEYS.CUSTOM_URL, input, vscode.ConfigurationTarget.Global)
+    vscode.window.showInformationMessage(`Адрес прокси сохранен: ${input}`)
+  }
+}
+
+async function toggleProxy() {
+  try {
+    const config = vscode.workspace.getConfiguration()
+    const isEnabled = isProxyEnabled()
+
+    if (isEnabled) {
+      await disableProxy(config)
+      vscode.window.showInformationMessage('Proxxy disabled')
+    } else {
+      await enableProxy(config)
+      vscode.window.showInformationMessage('Proxxy enabled')
+    }
+
+    updateStatusBarItem()
+  } catch (error) {
+    vscode.window.showErrorMessage(`Failed to toggle proxy: ${error}`)
+  }
+}
+
+async function enableProxy(config: vscode.WorkspaceConfiguration) {
+  const proxyConfig = vscode.workspace.getConfiguration(EXT_ID)
+  const proxyUrl = proxyConfig.get<string>(CONFIG_KEYS.CUSTOM_URL, '')
+
+  if (!proxyUrl) {
+    vscode.window.showErrorMessage('Proxxy URL is not set')
+    return
+  }
+
+  await Promise.all([
+    config.update(CONFIG_KEYS.HTTP_PROXY, proxyUrl, vscode.ConfigurationTarget.Global),
+    config.update(CONFIG_KEYS.HTTP_PROXY_SUPPORT, 'on', vscode.ConfigurationTarget.Global),
+    config.update(CONFIG_KEYS.HTTP_SYSTEM_CERTIFICATES, false, vscode.ConfigurationTarget.Global),
+  ])
+}
+
+async function disableProxy(config: vscode.WorkspaceConfiguration) {
+  await Promise.all([
+    config.update(CONFIG_KEYS.HTTP_PROXY, undefined, vscode.ConfigurationTarget.Global),
+    config.update(CONFIG_KEYS.HTTP_PROXY_SUPPORT, undefined, vscode.ConfigurationTarget.Global),
+    config.update(CONFIG_KEYS.HTTP_SYSTEM_CERTIFICATES, undefined, vscode.ConfigurationTarget.Global),
+  ])
+}
+
+function updateStatusBarItem() {
+  const isEnabled = isProxyEnabled()
+
+  statusBarItem.text = '$(plug) Proxxy'
+
+  if (isEnabled) {
+    const config = vscode.workspace.getConfiguration()
+    const currentProxy = config.get<string>(CONFIG_KEYS.HTTP_PROXY)
+    statusBarItem.color = '#FF2D55'
+    statusBarItem.tooltip = `Proxxy enabled (${currentProxy})`
+  } else {
+    statusBarItem.color = undefined
+    statusBarItem.tooltip = 'Proxxy disabled'
+  }
+}
+
+export function deactivate() {
+  if (isProxyEnabled()) {
+    const config = vscode.workspace.getConfiguration()
+    disableProxy(config).catch((error) => {
+      console.error('Failed to disable proxy on deactivation:', error)
+    })
+  }
+}

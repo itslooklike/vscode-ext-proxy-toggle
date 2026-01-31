@@ -1,23 +1,58 @@
 {
   "name": "vscode-ext-proxy-toggle",
-  "displayName": "vscode-ext-proxy-toggle",
-  "description": "",
-  "version": "0.0.1",
+  "displayName": "Proxxy",
+  "description": "Toggle VSCode proxy settings with a status bar button",
+  "version": "1.0.3",
+  "publisher": "itslooklike",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/itslooklike/vscode-ext-proxy-toggle.git"
+  },
+  "bugs": {
+    "url": "https://github.com/itslooklike/vscode-ext-proxy-toggle/issues"
+  },
+  "homepage": "https://github.com/itslooklike/vscode-ext-proxy-toggle#readme",
+  "icon": "images/icon-512.png",
   "engines": {
     "vscode": "^1.108.1"
   },
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "keywords": [
+    "proxy",
+    "socks5",
+    "network",
+    "ssh tunnel",
+    "vpn",
+    "connection"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "vscode-ext-proxy-toggle.helloWorld",
-        "title": "Hello World"
+        "command": "proxxy.toggle",
+        "title": "Proxxy: Toggle"
+      },
+      {
+        "command": "proxxy.setAddress",
+        "title": "Proxxy: Set Address"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Proxxy",
+      "properties": {
+        "proxxy.customUrl": {
+          "type": "string",
+          "default": "",
+          "description": "Proxy URL (e.g., socks5://127.0.0.1:1080)"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn run package",
@@ -31,18 +66,23 @@
     "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
     "check-types": "tsc --noEmit",
     "lint": "eslint src",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.108.1",
     "@types/mocha": "^10.0.10",
-    "@types/node": "22.x",
-    "typescript-eslint": "^8.52.0",
-    "eslint": "^9.39.2",
-    "esbuild": "^0.27.2",
-    "npm-run-all": "^4.1.5",
-    "typescript": "^5.9.3",
+    "@types/node": "25.x",
+    "@types/vscode": "^1.108.1",
     "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
+    "@vscode/test-electron": "^2.5.2",
+    "esbuild": "^0.27.2",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.54.0"
   }
 }

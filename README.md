@@ -1,71 +1,41 @@
-# vscode-ext-proxy-toggle README
+# Proxxy
 
-This is the README for your extension "vscode-ext-proxy-toggle". After writing up a brief description, we recommend including the following sections.
+Simple Proxy for VSCode
+
+![Proxxy Extension](images/example-1.webp)
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- 🔌 **One-click proxy toggle** - Click the status bar icon to enable/disable proxy
+- 🎨 **Visual indicator** - Red color when proxy is active
+- ⚙️ **Custom proxy URL** - Configure any proxy (socks5, http, https)
+- 🔄 **Auto-cleanup** - Proxy settings are removed when extension is disabled
 
-For example if there is an image subfolder under your extension project workspace:
+## Usage example with ssh
 
-\!\[feature X\]\(images/feature-x.png\)
+```sh
+# run ssh with open port
+ssh -D 1080 user@111.222.33.44
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+# toggle extension icon, and enter url `socks5://127.0.0.1:1080`
+```
 
-## Requirements
+## How to use
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+1. Click the 🔌 Proxxy icon in the status bar (bottom-right)
+2. If it's your first time, enter your proxy URL (e.g., `socks5://127.0.0.1:1080`)
+3. The icon will turn red when proxy is active
+4. Click again to disable proxy
 
-## Extension Settings
+## Configuration
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+You can change the proxy URL in VSCode settings:
 
-For example:
+- Open Settings (`Cmd+,` or `Ctrl+,`)
+- Search for "Proxxy"
+- Update `Proxxy: Custom Url`
 
-This extension contributes the following settings:
+## Commands
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+- `Proxxy: Toggle` - Toggle proxy on/off
+- `Proxxy: Set Address` - Change proxy URL
