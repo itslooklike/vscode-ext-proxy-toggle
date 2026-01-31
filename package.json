@@ -14,6 +14,10 @@
   },
   "homepage": "https://github.com/itslooklike/vscode-ext-proxy-toggle#readme",
   "icon": "images/icon-512.png",
+  "galleryBanner": {
+    "color": "#000000",
+    "theme": "dark"
+  },
   "engines": {
     "vscode": "^1.60.0"
   },

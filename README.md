@@ -1,5 +1,7 @@
 # Proxxy
 
+[![Version](https://img.shields.io/visual-studio-marketplace/v/itslooklike.vscode-ext-proxy-toggle?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=itslooklike.vscode-ext-proxy-toggle)
+
 Simple Proxy for VSCode
 
 ![Proxxy Extension](images/example-1.webp)
