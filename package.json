@@ -66,8 +66,8 @@
     "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
     "check-types": "tsc --noEmit",
     "lint": "eslint src",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\"",
+    "format": "prettier --write \"**/*.{ts,js,mjs,json}\"",
+    "format:check": "prettier --check \"**/*.{ts,js,mjs,json}\"",
     "test": "vscode-test"
   },
   "devDependencies": {
