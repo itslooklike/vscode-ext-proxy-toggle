@@ -1,6 +1,9 @@
 import * as vscode from 'vscode'
+import * as https from 'https'
 
 const EXT_ID = 'proxxy'
+const APP_NAME = 'Proxxy'
+const ACCENT_COLOR = '#FF2D55'
 
 const COMMANDS = {
   CLICK: `${EXT_ID}.click`,
@@ -16,11 +19,29 @@ const CONFIG_KEYS = {
 } as const
 
 let statusBarItem: vscode.StatusBarItem
+let connectionCheckTimer: NodeJS.Timeout | undefined
 
 function isProxyEnabled(): boolean {
   const config = vscode.workspace.getConfiguration()
   const currentProxy = config.get<string>(CONFIG_KEYS.HTTP_PROXY)
   return !!(currentProxy && currentProxy.length > 0)
+}
+
+function clearCheckConnectionTimer() {
+  if (connectionCheckTimer) {
+    clearTimeout(connectionCheckTimer)
+    connectionCheckTimer = undefined
+  }
+}
+
+function scheduleConnectionCheck(delayMs: number = 5_000) {
+  clearCheckConnectionTimer()
+
+  connectionCheckTimer = setTimeout(() => {
+    if (isProxyEnabled()) {
+      checkConnection()
+    }
+  }, delayMs)
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -29,6 +50,7 @@ export function activate(context: vscode.ExtensionContext) {
   statusBarItem.show()
 
   updateStatusBarItem()
+  scheduleConnectionCheck()
 
   const clickCommand = vscode.commands.registerCommand(COMMANDS.CLICK, async () => {
     await handleClick()
@@ -61,15 +83,15 @@ async function setCustomAddress() {
   const customUrl = proxyConfig.get<string>(CONFIG_KEYS.CUSTOM_URL, '')
 
   const input = await vscode.window.showInputBox({
-    prompt: 'Введите адрес прокси',
-    placeHolder: 'Например: socks5://127.0.0.1:1080',
+    prompt: 'Enter address',
+    placeHolder: 'Example: socks5://127.0.0.1:1080',
     value: customUrl,
     validateInput: (value) => {
       if (!value) {
-        return 'Адрес не может быть пустым'
+        return 'Address cannot be empty'
       }
       if (!value.includes('://')) {
-        return 'Адрес должен включать протокол (например: socks5://)'
+        return 'Address must include protocol (example: socks5://)'
       }
       return null
     },
@@ -77,7 +99,7 @@ async function setCustomAddress() {
 
   if (input) {
     await proxyConfig.update(CONFIG_KEYS.CUSTOM_URL, input, vscode.ConfigurationTarget.Global)
-    vscode.window.showInformationMessage(`Адрес прокси сохранен: ${input}`)
+    vscode.window.showInformationMessage(`Address saved: ${input}`)
   }
 }
 
@@ -88,10 +110,12 @@ async function toggleProxy() {
 
     if (isEnabled) {
       await disableProxy(config)
-      vscode.window.showInformationMessage('Proxxy disabled')
+      vscode.window.showInformationMessage(`${APP_NAME} disabled`)
     } else {
       await enableProxy(config)
-      vscode.window.showInformationMessage('Proxxy enabled')
+      vscode.window.showInformationMessage(`${APP_NAME} enabled`)
+
+      scheduleConnectionCheck()
     }
 
     updateStatusBarItem()
@@ -105,7 +129,7 @@ async function enableProxy(config: vscode.WorkspaceConfiguration) {
   const proxyUrl = proxyConfig.get<string>(CONFIG_KEYS.CUSTOM_URL, '')
 
   if (!proxyUrl) {
-    vscode.window.showErrorMessage('Proxxy URL is not set')
+    vscode.window.showErrorMessage(`${APP_NAME} URL is not set`)
     return
   }
 
@@ -127,20 +151,56 @@ async function disableProxy(config: vscode.WorkspaceConfiguration) {
 function updateStatusBarItem() {
   const isEnabled = isProxyEnabled()
 
-  statusBarItem.text = '$(plug) Proxxy'
+  statusBarItem.text = `$(plug) ${APP_NAME}`
 
   if (isEnabled) {
     const config = vscode.workspace.getConfiguration()
     const currentProxy = config.get<string>(CONFIG_KEYS.HTTP_PROXY)
-    statusBarItem.color = '#FF2D55'
-    statusBarItem.tooltip = `Proxxy enabled (${currentProxy})`
+    statusBarItem.color = ACCENT_COLOR
+    statusBarItem.tooltip = `${APP_NAME} enabled (${currentProxy})`
   } else {
     statusBarItem.color = undefined
-    statusBarItem.tooltip = 'Proxxy disabled'
+    statusBarItem.tooltip = `${APP_NAME} disabled`
   }
 }
 
+async function checkConnection() {
+  return new Promise<void>((resolve) => {
+    const options = {
+      hostname: 'www.google.com',
+      port: 443,
+      path: '/',
+      method: 'HEAD',
+      timeout: 5_000,
+    }
+
+    const req = https.request(options, (res) => {
+      if (res.statusCode && res.statusCode >= 200 && res.statusCode < 400) {
+        resolve()
+      } else {
+        vscode.window.showErrorMessage(`${APP_NAME}: Server is not available`)
+        resolve()
+      }
+    })
+
+    req.on('error', () => {
+      vscode.window.showErrorMessage(`${APP_NAME}: Server is not available`)
+      resolve()
+    })
+
+    req.on('timeout', () => {
+      req.destroy()
+      vscode.window.showErrorMessage(`${APP_NAME}: Server is not available`)
+      resolve()
+    })
+
+    req.end()
+  })
+}
+
 export function deactivate() {
+  clearCheckConnectionTimer()
+
   if (isProxyEnabled()) {
     const config = vscode.workspace.getConfiguration()
     disableProxy(config).catch((error) => {

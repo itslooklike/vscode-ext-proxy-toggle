@@ -22,7 +22,7 @@ ssh -D 1080 user@111.222.33.44
 
 ## How to use
 
-1. Click the 🔌 Proxxy icon in the status bar (bottom-right)
+1. Click the `🔌 Proxxy` icon in the status bar (bottom-right)
 2. If it's your first time, enter your proxy URL (e.g., `socks5://127.0.0.1:1080`)
 3. The icon will turn red when proxy is active
 4. Click again to disable proxy
@@ -31,8 +31,8 @@ ssh -D 1080 user@111.222.33.44
 
 You can change the proxy URL in VSCode settings:
 
-- Open Settings (`Cmd+,` or `Ctrl+,`)
-- Search for "Proxxy"
+- Open Settings (`cmd + shift + p` or `ctrl + shift + p`)
+- Search for `Proxxy`
 - Update `Proxxy: Custom Url`
 
 ## Commands
