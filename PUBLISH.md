@@ -17,14 +17,10 @@ vsce publish
 ## Обновление версии
 
 ```bash
-# Обновить patch версию (0.0.1 → 0.0.2)
-vsce publish patch
 
-# Обновить minor версию (0.0.1 → 0.1.0)
-vsce publish minor
-
-# Обновить major версию (0.0.1 → 1.0.0)
-vsce publish major
+vsce publish patch # (0.0.1 → 0.0.2)
+vsce publish minor # (0.0.1 → 0.1.0)
+vsce publish major # (0.0.1 → 1.0.0)
 
 # Или указать конкретную версию
 vsce publish 1.2.3
