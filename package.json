@@ -2,7 +2,7 @@
   "name": "vscode-ext-proxy-toggle",
   "displayName": "Proxxy",
   "description": "Toggle VSCode proxy settings with a status bar button",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "publisher": "itslooklike",
   "license": "MIT",
   "repository": {
