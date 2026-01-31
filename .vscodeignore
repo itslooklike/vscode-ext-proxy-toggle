@@ -13,3 +13,4 @@ PUBLISH.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+.prettierignore
