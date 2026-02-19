@@ -64,7 +64,13 @@ export function activate(context: vscode.ExtensionContext) {
     await setCustomAddress()
   })
 
-  context.subscriptions.push(clickCommand, toggleCommand, setAddressCommand, statusBarItem)
+  const configChangeListener = vscode.workspace.onDidChangeConfiguration((e) => {
+    if (e.affectsConfiguration(CONFIG_KEYS.HTTP_PROXY)) {
+      updateStatusBarItem()
+    }
+  })
+
+  context.subscriptions.push(clickCommand, toggleCommand, setAddressCommand, statusBarItem, configChangeListener)
 }
 
 async function handleClick() {
