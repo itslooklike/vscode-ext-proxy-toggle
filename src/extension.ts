@@ -19,7 +19,7 @@ function clearCheckConnectionTimer() {
   }
 }
 
-function scheduleConnectionCheck(delayMs: number = 5_000) {
+async function scheduleConnectionCheck() {
   clearCheckConnectionTimer()
 
   if (!isProxyEnabled()) {
@@ -29,24 +29,26 @@ function scheduleConnectionCheck(delayMs: number = 5_000) {
   isCheckingConnection = true
   updateStatusBarChecking()
 
-  connectionCheckTimer = setTimeout(async () => {
-    if (!isProxyEnabled()) {
-      isCheckingConnection = false
-      updateStatusBarItem()
-      return
-    }
+  const timeoutMs = 5_000
 
-    const ok = await checkConnection()
-    isCheckingConnection = false
+  const timeoutPromise = new Promise((resolve) => {
+    connectionCheckTimer = setTimeout(() => {
+      resolve(false)
+    }, timeoutMs)
+  })
 
-    if (!ok) {
-      const config = vscode.workspace.getConfiguration()
-      await disableProxy(config)
-      vscode.window.showErrorMessage(`${APP_NAME}: connection failed, proxy disabled`)
-    }
+  const ok = await Promise.race([checkConnection(), timeoutPromise])
 
-    updateStatusBarItem()
-  }, delayMs)
+  clearCheckConnectionTimer()
+  isCheckingConnection = false
+
+  if (!ok) {
+    const config = vscode.workspace.getConfiguration()
+    await disableProxy(config)
+    vscode.window.showErrorMessage(`${APP_NAME}: connection failed, proxy disabled`)
+  }
+
+  updateStatusBarItem()
 }
 
 export function activate(context: vscode.ExtensionContext) {
