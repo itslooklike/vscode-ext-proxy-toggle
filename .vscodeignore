@@ -14,3 +14,4 @@ PUBLISH.md
 **/*.ts
 **/.vscode-test.*
 .prettierignore
+.claude/**
