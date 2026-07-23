@@ -10,6 +10,7 @@ export const COMMANDS = {
 
 export const CONFIG_KEYS = {
   CUSTOM_URL: 'customUrl',
+  SAVED_URLS: 'savedUrls',
   HTTP_PROXY: 'http.proxy',
   HTTP_PROXY_SUPPORT: 'http.proxySupport',
   HTTP_SYSTEM_CERTIFICATES: 'http.systemCertificates',

@@ -10,7 +10,7 @@ Simple Proxy for VSCode
 
 - 🔌 **One-click proxy toggle** - Click the status bar icon to enable/disable proxy
 - 🎨 **Visual indicator** - Red color when proxy is active
-- ⚙️ **Custom proxy URL** - Configure any proxy (socks5, http, https)
+- ⚙️ **Proxy settings tab** - Save multiple addresses, select the active one, delete unused
 - 🔄 **Auto-cleanup** - Proxy settings are removed when extension is disabled
 
 ## Usage example with ssh
@@ -19,25 +19,24 @@ Simple Proxy for VSCode
 # run ssh with open port
 ssh -D 1080 user@111.222.33.44
 
-# toggle extension icon, and enter url `socks5://127.0.0.1:1080`
+# open Proxxy settings and add url `socks5://127.0.0.1:1080`
 ```
 
 ## How to use
 
 1. Click the `🔌 Proxxy` icon in the status bar (bottom-right)
-2. If it's your first time, enter your proxy URL (e.g., `socks5://127.0.0.1:1080`)
-3. The icon will turn red when proxy is active
+2. If it's your first time, the settings tab opens — add a proxy URL (e.g., `socks5://127.0.0.1:1080`)
+3. Click the icon again to enable proxy (turns red when active)
 4. Click again to disable proxy
 
 ## Configuration
 
-You can change the proxy URL in VSCode settings:
+Manage addresses via the settings tab (`Proxxy: Settings`), or in VSCode settings:
 
-- Open Settings (`cmd + shift + p` or `ctrl + shift + p`)
-- Search for `Proxxy`
-- Update `Proxxy: Custom Url`
+- `Proxxy: Custom Url` — currently selected proxy URL
+- `Proxxy: Saved Urls` — list of saved proxy URLs
 
 ## Commands
 
 - `Proxxy: Toggle` - Toggle proxy on/off
-- `Proxxy: Set Address` - Change proxy URL
+- `Proxxy: Settings` - Open settings tab to manage proxy addresses

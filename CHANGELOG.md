@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0]
+
+### Added
+
+- Settings webview tab for managing proxy addresses
+- Save multiple proxy URLs and select the active one
+- Delete saved proxy addresses
+
+### Changed
+
+- `Proxxy: Set Address` renamed to `Proxxy: Settings` (opens a tab instead of input box)
+
 ## [1.1.0]
 
 ### Added
