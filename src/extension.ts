@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
 import { APP_NAME, ACCENT_COLOR, COMMANDS, CONFIG_KEYS, EXT_ID } from './constants'
 import { checkConnection } from './checkConnection'
+import { SettingsPanel } from './settingsPanel'
 
 let statusBarItem: vscode.StatusBarItem
 let connectionCheckTimer: NodeJS.Timeout | undefined
@@ -67,8 +68,8 @@ export function activate(context: vscode.ExtensionContext) {
     await toggleProxy()
   })
 
-  const setAddressCommand = vscode.commands.registerCommand(COMMANDS.SET_ADDRESS, async () => {
-    await setCustomAddress()
+  const setAddressCommand = vscode.commands.registerCommand(COMMANDS.SET_ADDRESS, () => {
+    SettingsPanel.show()
   })
 
   const configChangeListener = vscode.workspace.onDidChangeConfiguration((e) => {
@@ -87,32 +88,7 @@ async function handleClick() {
   if (customUrl) {
     await toggleProxy()
   } else {
-    await setCustomAddress()
-  }
-}
-
-async function setCustomAddress() {
-  const proxyConfig = vscode.workspace.getConfiguration(EXT_ID)
-  const customUrl = proxyConfig.get<string>(CONFIG_KEYS.CUSTOM_URL, '')
-
-  const input = await vscode.window.showInputBox({
-    prompt: 'Enter address',
-    placeHolder: 'Example: socks5://127.0.0.1:1080',
-    value: customUrl,
-    validateInput: (value) => {
-      if (!value) {
-        return 'Address cannot be empty'
-      }
-      if (!value.includes('://')) {
-        return 'Address must include protocol (example: socks5://)'
-      }
-      return null
-    },
-  })
-
-  if (input) {
-    await proxyConfig.update(CONFIG_KEYS.CUSTOM_URL, input, vscode.ConfigurationTarget.Global)
-    vscode.window.showInformationMessage(`Address saved: ${input}`)
+    SettingsPanel.show()
   }
 }
 

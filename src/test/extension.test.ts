@@ -38,6 +38,12 @@ suite('Proxxy Extension Test Suite', () => {
     assert.strictEqual(typeof customUrl, 'string')
   })
 
+  test('Should have proxxy.savedUrls configuration', () => {
+    const config = vscode.workspace.getConfiguration('proxxy')
+    const savedUrls = config.get<string[]>('savedUrls')
+    assert.ok(Array.isArray(savedUrls))
+  })
+
   test('Should create status bar item after activation (via click command)', async () => {
     const extension = vscode.extensions.getExtension('itslooklike.vscode-ext-proxy-toggle')
     await extension!.activate()
