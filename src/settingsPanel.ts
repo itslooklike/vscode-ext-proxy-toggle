@@ -2,10 +2,7 @@ import * as vscode from 'vscode'
 import { APP_NAME, ACCENT_COLOR, CONFIG_KEYS, EXT_ID } from './constants'
 
 type PanelMessage =
-  | { type: 'add'; url: string }
-  | { type: 'select'; url: string }
-  | { type: 'delete'; url: string }
-  | { type: 'ready' }
+  { type: 'add'; url: string } | { type: 'select'; url: string } | { type: 'delete'; url: string } | { type: 'ready' }
 
 export class SettingsPanel {
   public static currentPanel: SettingsPanel | undefined
