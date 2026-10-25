@@ -13,6 +13,9 @@ vsce login itslooklike
 # Опубликуйте
 vsce publish
 ovsx publish  # для open-vsx
+
+# Для выхода и обновления токена доступа
+vsce logout itslooklike
 ```
 
 ## Обновление версии
