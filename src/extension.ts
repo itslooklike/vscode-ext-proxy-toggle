@@ -1,55 +1,13 @@
 import * as vscode from 'vscode'
 import { APP_NAME, ACCENT_COLOR, COMMANDS, CONFIG_KEYS, EXT_ID } from './constants'
-import { checkConnection } from './checkConnection'
 import { SettingsPanel } from './settingsPanel'
 
 let statusBarItem: vscode.StatusBarItem
-let connectionCheckTimer: NodeJS.Timeout | undefined
-let isCheckingConnection = false
 
 function isProxyEnabled(): boolean {
   const config = vscode.workspace.getConfiguration()
   const currentProxy = config.get<string>(CONFIG_KEYS.HTTP_PROXY)
   return !!(currentProxy && currentProxy.length > 0)
-}
-
-function clearCheckConnectionTimer() {
-  if (connectionCheckTimer) {
-    clearTimeout(connectionCheckTimer)
-    connectionCheckTimer = undefined
-  }
-}
-
-async function scheduleConnectionCheck() {
-  clearCheckConnectionTimer()
-
-  if (!isProxyEnabled()) {
-    return
-  }
-
-  isCheckingConnection = true
-  updateStatusBarChecking()
-
-  const timeoutMs = 5_000
-
-  const timeoutPromise = new Promise((resolve) => {
-    connectionCheckTimer = setTimeout(() => {
-      resolve(false)
-    }, timeoutMs)
-  })
-
-  const ok = await Promise.race([checkConnection(), timeoutPromise])
-
-  clearCheckConnectionTimer()
-  isCheckingConnection = false
-
-  if (!ok) {
-    const config = vscode.workspace.getConfiguration()
-    await disableProxy(config)
-    vscode.window.showErrorMessage(`${APP_NAME}: connection failed, proxy disabled`)
-  }
-
-  updateStatusBarItem()
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -58,7 +16,6 @@ export function activate(context: vscode.ExtensionContext) {
   statusBarItem.show()
 
   updateStatusBarItem()
-  scheduleConnectionCheck()
 
   const clickCommand = vscode.commands.registerCommand(COMMANDS.CLICK, async () => {
     await handleClick()
@@ -73,7 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
   })
 
   const configChangeListener = vscode.workspace.onDidChangeConfiguration((e) => {
-    if (e.affectsConfiguration(CONFIG_KEYS.HTTP_PROXY) && !isCheckingConnection) {
+    if (e.affectsConfiguration(CONFIG_KEYS.HTTP_PROXY)) {
       updateStatusBarItem()
     }
   })
@@ -100,12 +57,12 @@ async function toggleProxy() {
     if (isEnabled) {
       await disableProxy(config)
       vscode.window.showInformationMessage(`${APP_NAME} disabled`)
-      updateStatusBarItem()
     } else {
       await enableProxy(config)
       vscode.window.showInformationMessage(`${APP_NAME} enabled`)
-      scheduleConnectionCheck()
     }
+
+    updateStatusBarItem()
   } catch (error) {
     vscode.window.showErrorMessage(`Failed to toggle proxy: ${error}`)
   }
@@ -135,12 +92,6 @@ async function disableProxy(config: vscode.WorkspaceConfiguration) {
   ])
 }
 
-function updateStatusBarChecking() {
-  statusBarItem.text = `$(sync~spin) ${APP_NAME}`
-  statusBarItem.color = ACCENT_COLOR
-  statusBarItem.tooltip = `${APP_NAME}: checking connection...`
-}
-
 function updateStatusBarItem() {
   const isEnabled = isProxyEnabled()
 
@@ -158,8 +109,6 @@ function updateStatusBarItem() {
 }
 
 export function deactivate() {
-  clearCheckConnectionTimer()
-
   if (isProxyEnabled()) {
     const config = vscode.workspace.getConfiguration()
     disableProxy(config).catch((error) => {
